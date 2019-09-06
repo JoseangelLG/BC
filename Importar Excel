@@ -1,0 +1,86 @@
+Private Sub cmdImporta_Click()
+On Error GoTo Err_cmdImporta_Click
+    
+'  Dimensiona variables necesarias para Recordset
+   
+   Dim apExcel                As EXCEL.Application
+   Dim rst3                   As ADODB.Recordset
+   Dim strSQL3                As String
+   Dim dblRenglon             As Double
+   
+   Dim intRenglon      As Integer
+   
+   intRenglon = 2
+     
+'  Llama a la Barra de Progreso
+   DoCmd.OpenForm "frmProgressBar2"
+   Forms!frmProgressBar2.lblProgressBar.Caption = "Importar Archivo ..."
+   Call Form_frmProgressBar2.Progreso(1)
+   Form_frmProgressBar2.Repaint
+   Me.Repaint
+   
+   Set apExcel = New EXCEL.Application
+   apExcel.Workbooks.Open (Me.txtLastLocationOfFile)
+   apExcel.Application.DisplayAlerts = False
+
+'  Cambiar nombre a hoja
+   apExcel.Worksheets(1).Activate
+   dblRenglon = apExcel.Cells(apExcel.Rows.Count, 2).End(xlUp).Row
+   
+   Call Form_frmProgressBar2.Progreso(5)
+   
+'  guardar los cambios en el archivo
+   apExcel.Application.DisplayAlerts = True
+   
+   'Tabla donde se usara la informacion.
+   DoCmd.RunSQL "DELETE * FROM tblPTAConciliation"
+   
+   Call Form_frmProgressBar2.Progreso(10)
+
+   strSQL3 = "SELECT * FROM tblPTAConciliation"
+    
+   Set rst3 = New ADODB.Recordset
+   rst3.ActiveConnection = CurrentProject.Connection
+   rst3.Open Source:=strSQL3, CursorType:=adOpenDynamic, LockType:=adLockOptimistic
+
+   Do While intRenglon <= dblRenglon
+                  
+        If IsDate(apExcel.Cells(intRenglon, 6)) Then
+             rst3.AddNew
+             rst3.Fields("TrackingNumber") = apExcel.Cells(intRenglon, 2)
+             rst3.Fields("CarrierID") = apExcel.Cells(intRenglon, 4)
+             rst3.Fields("StartDate") = apExcel.Cells(intRenglon, 6)
+             rst3.Fields("TotalFreightCharge") = apExcel.Cells(intRenglon, 8)
+             rst3.Fields("TariffRatingCurrency") = apExcel.Cells(intRenglon, 16)
+             rst3.Fields("SetUpUserSQL") = CurrentUser()
+             rst3.Fields("SetUpDate") = Now()
+             rst3.Update
+        End If
+        
+        intRenglon = intRenglon + 1
+    Loop
+
+   apExcel.Application.DisplayAlerts = False
+   apExcel.ActiveWorkbook.Close
+
+   
+   Call Form_frmProgressBar2.Progreso(40)
+
+   
+   Call Form_frmProgressBar2.Progreso(100)
+   Me.Repaint
+   
+'  Cierra la barra de progreso
+   DoCmd.Close acForm, "frmProgressBar2"
+
+   MsgBox "Documento Importado", vbInformation + vbOKOnly, "Mensaje: "
+   
+Exit_cmdImporta_Click:
+    Exit Sub
+
+Err_cmdImporta_Click:
+    MsgBox Err.Description
+    apExcel.ActiveWorkbook.Close
+    Resume Exit_cmdImporta_Click
+    
+End Sub
