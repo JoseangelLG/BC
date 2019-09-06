@@ -1,0 +1,17 @@
+On Error GoTo Err_cmdSalida_Click
+
+
+
+Exit_cmdSalida_Click:
+    Exit Sub
+
+Err_cmdSalida_Click:
+    MsgBox Err.Description
+    Resume Exit_cmdSalida_Click
+
+
+
+
+
+
+On Error Resume Next
