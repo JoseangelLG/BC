@@ -1,0 +1,8 @@
+Dim varResponse             As Variant
+
+'   Confirma si quiere insertar este registro
+       varResponse = MsgBox("¿Desea dar de Alta esta Ruta?", vbQuestion + vbYesNoCancel, "Pregunta:")
+ 
+    If varResponse <> vbYes Then
+       Exit Sub
+    End If
