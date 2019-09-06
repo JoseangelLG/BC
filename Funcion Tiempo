@@ -1,0 +1,12 @@
+Private Sub espera(segundos As Integer)
+On Error Resume Next
+
+    Dim Wait As Date
+    
+    Wait = DateAdd("s", segundos, Now())
+    
+    While Now() < Wait
+    
+    Wend
+    
+End Sub
