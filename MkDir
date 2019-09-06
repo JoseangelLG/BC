@@ -1,0 +1,10 @@
+strPath = DFirst("[PathName]", "tblPaths", "[idPath]=1")
+If Dir(strPath, vbDirectory) = "" Then
+    MkDir strPath
+End If
+If Dir(strPath & "\Análisis", vbDirectory) = "" Then
+    MkDir strPath & "\Análisis"
+End If
+If Dir(strPath & "\Análisis\Catalogos", vbDirectory) = "" Then
+    MkDir strPath & "\Análisis\Catalogos"
+End If
