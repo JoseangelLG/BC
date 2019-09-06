@@ -1,0 +1,6 @@
+Select Case WeekDay
+          Case 1
+          Me.Controls(DESC).Left = 720
+          Case 2
+          Me.Controls(DESC).Left = 2160
+    End Select
