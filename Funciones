@@ -1,0 +1,71 @@
+	• Devuelve el SSO del usuario
+		CurrentUser()
+		
+	• Devuelbe el nombre del usuario
+		NombreUsuario(CurrentUser())
+		
+	• Obtiene el valur de la columna x en un combobox
+		Me.txtPlant.Column(x)
+	
+	• Vuelve a correr una consulta
+		Me.frmInventoryOTRDetalle.Requery
+	
+	• Cambia la consulta en la pestaña Data de un subformulario
+		Form_frmInventoryOTRDetalle.RecordSource = ¨Select ....¨
+		Form_frmBusinessCaseSummaryDet1.RecordSource = sql1
+		
+		Me.txtSSO.RowSource = " SELECT
+		
+	• Llamar funciones de otras pantallas
+	Call Form_frmWindowsDocksTimesDet.InsertaWindow(Me.txtPlant, Me.txtDock, Me.Caption)
+		
+	• Uso del Split
+		Split(strVal, ".")(0) & "." & Left(Split(strVal, ".")(1), 2)
+		
+	• Uso del dfirst
+	
+	         DFirst ( expression, domain, [criteria] )
+	         Busca el telefono del Empleado que crea la carta ventana
+	         varTelefono = DFirst("[Phone]", "tblEmployees", "[employeeID]=" & CurrentUser)
+	
+	• while 
+		While LCounter < 10
+		      MsgBox (LCounter)
+		      LCounter = LCounter + 1
+		Wend
+
+	• do cmd con filtros
+		    Abre Tabla de Read Only
+		    DoCmd.OpenTable "tblAccidentTransportErr", acViewNormal, acReadOnly
+		    DoCmd.ApplyFilter "SetUpUserSQL", "SetUpUserSQL='" & CurrentUser() & "'"
+		
+	• Salto de linea
+		vbCrLf
+		
+	•  IF 
+		IIf(rst1.Fields("ChangeFrequency") = True, "X", "")
+		
+	• Abrir una tabla en read only
+	'   Abre Tabla de Read Only
+	    DoCmd.OpenTable "tblListChangesErr", acViewNormal, acReadOnly
+	    DoCmd.ApplyFilter "SetUpUserSQL", "SetUpUserSQL='" & CurrentUser() & "'"
+	
+	• Variable Bolleana
+		Dim boolNewRecord   As Boolean
+		
+	• Color en correos
+		"<br><br>" & "<p style='color:red'> <b>Nota: Están pendientes de llenarse los campos de Reason Code y Número de Impact </b> </p>" & _
+	
+	• Correo del user
+		strEmailCC = DFirst("Email", "tblEmployees", "EmployeeId=" & CurrentUser())
+		
+		
+	• Cierra forma
+	 ' Cierra la Forma
+	    DoCmd.Close acForm, "frmRegresaCotizando"
+	
+	• Logs
+		RegistraLog "Closed", "frmMFUBuscadorDetalle", "Disconnect"
+	
+		
+	
