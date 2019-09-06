@@ -1,0 +1,15 @@
+On Error GoTo Err_cmdAddCurrent_Click
+
+'   Declaración de variables
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "frmBusinessCaseSummaryAddCurrent"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_cmdAddCurrent_Click:
+    Exit Sub
+
+Err_cmdAddCurrent_Click:
+    MsgBox Err.Description
+    Resume Exit_cmdAddCurrent_Click
