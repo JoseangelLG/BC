@@ -1,0 +1,2 @@
+' Cierra la Forma
+    DoCmd.Close acForm, "frmRegresaCotizando"
