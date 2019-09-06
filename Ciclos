@@ -1,0 +1,10 @@
+Ciclo while 
+While LCounter < 10
+      MsgBox (LCounter)
+      LCounter = LCounter + 1
+Wend
+
+ Ciclo for 
+For a = 1 To 1
+
+Next a
