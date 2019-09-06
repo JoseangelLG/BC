@@ -1,0 +1,127 @@
+• Uso del dfirst
+
+         DFirst ( expression, domain, [criteria] )
+         Busca el telefono del Empleado que crea la carta ventana
+         varTelefono = DFirst("[Phone]", "tblEmployees", "[employeeID]=" & CurrentUser)
+
+
+Select 
+
+'   Declarar Variables
+    Dim rst1       As ADODB.Recordset
+    Dim strSQL1    As String
+
+    strSQL1 = "SELECT "
+       
+    Set rst1 = New ADODB.Recordset
+    rst1.ActiveConnection = CurrentProject.Connection
+    rst1.Open Source:=strSQL1, CursorType:=adOpenDynamic, LockType:=adLockOptimistic
+       
+    If rst1.EOF And rst1.BOF Then
+         'MsgBox "No hay nada"
+    Else
+        
+    End If
+
+'   Cierra Recordset
+    rst1.Close
+    Set rst1 = Nothing
+
+Update 
+
+'  Declarar Variables
+   Dim rst1            As ADODB.Recordset
+   Dim strSQL1         As String
+
+strSQL1 = "SELECT tblListChanges.IdList, tblListChanges.CancelledReg, " & _
+      " tblListChanges.CancelledRegUser, tblListChanges.CancelledRegUserSQL, tblListChanges.CancelledRegDate FROM tblListChanges WHERE (((tblListChanges.IdList)='" & Me.txtIdCambio & "'))"
+
+   Set rst1 = New ADODB.Recordset
+   rst1.ActiveConnection = CurrentProject.Connection
+   rst1.Open Source:=strSQL1, CursorType:=adOpenDynamic, LockType:=adLockOptimistic
+
+'  Actualiza Registro
+   rst1.Fields("CancelledReg") = True
+   rst1.Fields("CancelledRegUser") = DFirst("Name", "tblEmployees", "EmployeeID=" & CurrentUser()) & " " & _
+                                DFirst("PaternalLastName", "tblEmployees", "EmployeeID=" & CurrentUser())
+   rst1.Fields("CancelledRegUserSQL") = CurrentUser()
+   rst1.Fields("CancelledRegDate") = Now()
+   rst1.Update
+
+   rst1.Close
+   Set rst1 = Nothing
+
+Do loop 
+Do Until rst1.EOF
+    dblCostMax = rst1.Fields("Cost")
+    rst1.MoveNext
+Loop
+
+Delete 
+
+ DoCmd.RunSQL "DELETE tblChangeControl.*, tblChangeControl.IdCambio FROM tblChangeControl " & _
+          " WHERE tblChangeControl.IdCambio='" & Me.txtIdCambio & "'"
+
+
+ADD NEW 
+
+Do Until rst1.EOF
+               rst2.AddNew
+               rst2.Fields("OPYear") = intOPYear
+               rst2.Update
+               rst1.MoveNext
+            Loop
+
+
+ADD NEW 2
+
+'   Arma instruccion Insert de SQL
+    strSQLA = "INSERT INTO tblRoutes" & _
+              "(Route, SpotBUSA,SpotBMex, Plant, PlantGroup, Cisco, RouteStatus, StartDate, EndDate, " & _
+              " RouteOrigin, TransportType, RouteType, AsRequired, " & _
+              " Comments, HazardousMaterial, UN, Class, LoadBars, CantLoadBars, " & _
+              " Dock, DoorToDoor, AutoTender, CODS, Optimizada, SetUpUserSQL, SetUpDate, UpdateUserSQL, UpdateDate ) VALUES ("
+    strSQLb = "'" & Me.txtRoute & "'" & "," & _
+              "'" & Me.txtSpotBuyUSA & "'" & "," & _
+              "'" & Me.txtSpotBuyMex & "'" & "," & _
+              "'" & Me.txtPlant & "'" & "," & _
+              "'" & Me.txtGroup & "'" & "," & _
+              Me.txtCisco & "," & _
+              Me.txtRouteStatus & "," & _
+              strFecha1 & "," & _
+              strFecha2 & ","
+    strSQLC = "'" & Me.txtRouteOrigin & "'" & "," & _
+              "'" & Me.txtTransportType & "'" & "," & _
+              "'" & Me.txtRouteType & "'" & "," & _
+              strAsRequired & "," & _
+              "'" & Me.txtComments & "'" & "," & _
+              strHazarousMaterial & "," & _
+              "'" & Me.txtUN & "'" & "," & _
+              "'" & Me.txtClass & "'" & "," & _
+              strLoadBars & "," & _
+              "'" & Me.txtCantLoadBars & "'" & "," & _
+              "'" & Me.txtDock & "'" & "," & _
+              Me.chkDoorToDoor & "," & _
+              Me.chkAutoTender & "," & _
+              "'" & Me.txtCODS & "'" & "," & _
+              "'" & Me.txtOptimizada & "'" & "," & _
+              "'" & CurrentUser() & "'" & "," & _
+              strFecha3 & "," & _
+              "'" & CurrentUser() & "'" & "," & _
+              strFecha3 & ")"
+              
+    strSQL1 = strSQLA + strSQLb + strSQLC
+
+    Set cmd1 = New ADODB.Command
+    With cmd1
+         .ActiveConnection = CurrentProject.Connection
+         .CommandText = strSQL1
+         .CommandType = adCmdText
+         .Execute
+    End With
+
+
+Insert corto
+
+DoCmd.RunSQL "INSERT INTO tblRunProcessCostSav (ProcessDate) " & _
+                "SELECT Date() AS Fecha"
