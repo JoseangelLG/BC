@@ -1,0 +1,165 @@
+Private Sub ReporteCubTotals()
+On Error Resume Next
+
+'  Declaración de variables
+   Dim rst1                    As ADODB.Recordset
+   Dim strSQL1                 As String
+   Dim strDatosSQL             As String
+   Dim rstDatos                As ADODB.Recordset
+   
+   Dim intultReg               As Integer
+   Dim lngcountult             As Long
+   
+   Dim intNumHojas             As Integer
+   Dim intContador             As Integer
+   Dim strPath                 As String
+   Dim strSource               As String
+   Dim intRengSC               As Integer
+   Dim i                       As Integer
+
+   varResponse = MsgBox("¿Desea generar el reporte Totales Cubicaje?", vbQuestion + vbYesNoCancel, "Pregunta:")
+
+   If varResponse <> vbYes Then
+      Exit Sub
+   End If
+
+   strPath = "C:\Brain_LS_Ingenieria_Cubicaje_Ventana"
+
+'  Crea las carpetas requeridas
+   MkDir strPath
+   MkDir strPath & "\Reportes"
+   MkDir strPath & "\Reportes\Cubicaje"
+
+   Set apExcelCub = CreateObject("Excel.application")
+
+'  Llama a la Barra de Progreso
+   DoCmd.OpenForm "frmProgressBar2"
+   Forms!frmProgressBar2.lblProgressBar.Caption = "Preparando formato ..."
+   Call Form_frmProgressBar2.Progreso(1)
+   Form_frmProgressBar2.Repaint
+   Me.Repaint
+
+'  Agrega un nuevo Libro y le pone el Nombre a la hoja
+   apExcelCub.Workbooks.Add
+   apExcelCub.ActiveSheet.Name = "Cubicaje"
+
+   strSource = strPath & "\Reportes\Cubicaje\" & "CubeByWindow_" & Format(Date, "yyyymmdd") & ".xlsx"
+
+'  Graba la Hoja
+   apExcelCub.Application.DisplayAlerts = False
+   apExcelCub.ActiveWorkbook.SaveAs FileName:=strSource, Password:="", _
+           WriteResPassword:="", ReadOnlyRecommended:=False
+           
+   Call Form_frmProgressBar2.Progreso(10)
+
+'  Cuenta el número de hojas para dejar solo la primera y eliminar las demás
+   apExcelCub.Application.DisplayAlerts = False
+   intNumHojas = apExcelCub.ActiveWorkbook.Sheets.Count
+   If intNumHojas > 1 Then
+      For intContador = 1 To intNumHojas
+        apExcelCub.Sheets("Sheet" & intContador).Delete
+      Next
+   End If
+
+'  Graba el Documento
+   apExcelCub.ActiveWorkbook.SaveAs FileName:=strSource, Password:="", _
+           WriteResPassword:="", ReadOnlyRecommended:=False
+
+'-------------------------------------------------------------------------------------------
+'  REPORTE
+'-------------------------------------------------------------------------------------------
+   apExcelCub.Visible = False
+   apExcelCub.ActiveWindow.Zoom = 80
+
+   Set Range_destinoCub = apExcelCub.Cells(1, 1)
+   Call Form_frmProgressBar2.Progreso(20)
+      
+   strDatosSQL = "SELECT Top 10 * from qryCubicajeVentanaTotal"
+
+   ' -- traer los registros
+   Set rstDatos = New ADODB.Recordset
+   rstDatos.ActiveConnection = CurrentProject.Connection
+   rstDatos.Open Source:=strDatosSQL, CursorType:=adOpenDynamic, LockType:=adLockOptimistic
+
+   Call Form_frmProgressBar2.Progreso(30)
+
+     ' -- .. si hay registros
+   If Not rstDatos.EOF Then
+          ' -- Nombre de los encabezados
+      For i = 0 To rstDatos.Fields.Count - 1
+          Range_destinoCub.Offset(0, i).Value = rstDatos.Fields(i).Name
+      Next
+
+      ' -- Copiar los registros
+      Range_destinoCub.Offset(1, 0).CopyFromRecordset rstDatos
+      i = 7
+      Do Until apExcelCub.Cells(i, 1) = ""
+         i = i + 1
+      Loop
+      DoEvents
+   Else
+      ' -- No hay datos
+      MsgBox "No hay registros activos para importar", vbInformation
+   End If
+
+   ' -- Liberar el recordset y referencias
+   If Not rstDatos Is Nothing Then
+      If rstDatos.State = adStateOpen Then
+         rstDatos.Close ' -- close
+      End If
+      Set rstDatos = Nothing
+   End If
+
+   If Not Range_destinoCub Is Nothing Then
+       Set Range_destinoCub = Nothing
+   End If
+
+'  Ultimo Registro
+   lngcountult = apExcelCub.Cells(apExcelCub.Rows.Count, 1).End(xlUp).Row
+   
+   Call Form_frmProgressBar2.Progreso(40)
+   
+'  Establece formato de celdas
+   apExcelCub.ActiveWorkbook.ActiveSheet.Range("A1:L1").Font.Bold = True
+      
+   apExcelCub.Range("E:E").NumberFormat = "h:mm AM/PM"
+      
+   intRengSC = lngcountult
+   
+'  Coloca cuadricula
+   apExcelCub.ActiveWorkbook.ActiveSheet.Range("A1:L" & intRengSC).Select
+   apExcelCub.Selection.Borders(xlEdgeLeft).LineStyle = xlContinuous
+   apExcelCub.Selection.Borders(xlEdgeTop).LineStyle = xlContinuous
+   apExcelCub.Selection.Borders(xlEdgeRight).LineStyle = xlContinuous
+   apExcelCub.Selection.Borders(xlEdgeBottom).LineStyle = xlContinuous
+   apExcelCub.Selection.Borders(xlInsideVertical).LineStyle = xlContinuous
+   apExcelCub.Selection.Borders(xlInsideHorizontal).LineStyle = xlContinuous
+
+   Call Form_frmProgressBar2.Progreso(50)
+   
+'  Cierra Recordset
+   rst1.Close
+   Set rst1 = Nothing
+   
+   apExcelCub.Sheets("Cubicaje").Select
+   apExcelCub.Range("A2").Select
+   apExcelCub.ActiveWindow.FreezePanes = True
+   
+   apExcelCub.Range("A1").Select
+   
+'  Graba la Hoja
+   apExcelCub.ActiveWorkbook.Save
+   
+    apExcelCub.ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, FileName:=Left(strSource, Len(strSource) - 5) & ".pdf" _
+           , Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+   
+   '89.15
+   
+   apExcelCub.Application.DisplayAlerts = True
+
+   Call Form_frmProgressBar2.Progreso(100)
+   apExcelCub.Visible = True
+
+'  Cierra la barra de progreso
+   DoCmd.Close acForm, "frmProgressBar2"
+End Sub
