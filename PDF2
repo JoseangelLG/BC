@@ -1,0 +1,119 @@
+Private Sub ReporteCubTotals()
+On Error GoTo Err_ReporteCubTotals
+
+'  Declaración de variables
+   Dim intNumHojas             As Integer
+   Dim intContador             As Integer
+   Dim strRutaCarpeta          As String
+   Dim strRutaExcel            As String
+   Dim ArchivoExcel            As EXCEL.Application
+   Dim varResponse             As Variant
+
+   '--------------------------------------------- Pregunta Se Desea Generar el Reporte ---------------------------------------------
+   varResponse = MsgBox("¿Desea generar el reporte Totales Cubicaje?", vbQuestion + vbYesNoCancel, "Pregunta:")
+   If varResponse <> vbYes Then
+      Exit Sub
+   End If
+   
+   '---------------------------------------- Valida la Ruta y crea las carpetas si no Existen --------------------------------------
+   strRutaCarpeta = "C:\Brain_LS_Ingenieria_Cubicaje_Ventana"
+
+'  Crea las carpetas requeridas
+   If Dir(strRutaCarpeta, vbDirectory) = "" Then
+        MkDir strRutaCarpeta
+   End If
+   
+   If Dir(strRutaCarpeta & "\Reportes", vbDirectory) = "" Then
+         MkDir strRutaCarpeta & "\Reportes"
+   End If
+
+   If Dir(strRutaCarpeta & "\Reportes\Cubicaje", vbDirectory) = "" Then
+        MkDir strRutaCarpeta & "\Reportes\Cubicaje"
+   End If
+    
+   '---------------------------------------- Crea el Archivo de Excel y lo Guarda en la Ruta ---------------------------------------
+    
+   Set ArchivoExcel = CreateObject("Excel.application")
+
+'  Agrega un nuevo Libro y le pone el Nombre a la hoja
+   ArchivoExcel.Workbooks.Add
+   ArchivoExcel.ActiveSheet.Name = "Hoja1"
+
+   strRutaExcel = strRutaCarpeta & "\Reportes\Cubicaje\" & "CubeByWindow_" & Format(Date, "yyyymmdd") & ".xlsx"
+
+'  Graba la Hoja
+   ArchivoExcel.Application.DisplayAlerts = False
+   
+   ArchivoExcel.ActiveWorkbook.SaveAs FileName:=strRutaExcel, Password:="", _
+           WriteResPassword:="", ReadOnlyRecommended:=False
+
+'  Cuenta el número de hojas para dejar solo la primera y eliminar las demás
+   ArchivoExcel.Application.DisplayAlerts = False
+   intNumHojas = ArchivoExcel.ActiveWorkbook.Sheets.Count
+   If intNumHojas > 1 Then
+      For intContador = 1 To intNumHojas
+        ArchivoExcel.Sheets("Sheet" & intContador).Delete
+      Next
+   End If
+
+'  Graba el Documento
+   ArchivoExcel.ActiveWorkbook.SaveAs FileName:=strRutaExcel, Password:="", _
+           WriteResPassword:="", ReadOnlyRecommended:=False
+           
+'   apExcel.ActiveWorkbook.SaveAs FileName:=strSource, _
+'   Password:="", WriteResPassword:="", ReadOnlyRecommended:=False
+
+   '--------------------------------------------------------------------------------------------------------------------------------
+   '                                                      CREA EL REPORTE
+   '--------------------------------------------------------------------------------------------------------------------------------
+    
+   ArchivoExcel.Visible = True
+   ArchivoExcel.ActiveWindow.Zoom = 80
+   
+   '   Establece Ancho de Columnas
+   ArchivoExcel.Cells(1).ColumnWidth = 89
+   
+   '   Escribe los textos en el Archivo
+   ArchivoExcel.Cells(1, 1).Formula = "Penske Laredo GATE PASS"
+   
+   ' Fuentes
+   ArchivoExcel.Range("A1").Font.Size = 12
+   ArchivoExcel.Range("A1:R1").Font.Bold = True
+   
+   'Lineas
+   ArchivoExcel.Range("B10").Select
+   ArchivoExcel.Selection.Borders(xlEdgeBottom).LineStyle = xlContinuous
+   
+   ArchivoExcel.Range("B16:E18").Select
+   ArchivoExcel.Selection.Borders(xlEdgeLeft).LineStyle = xlContinuous
+   ArchivoExcel.Selection.Borders(xlEdgeTop).LineStyle = xlContinuous
+   ArchivoExcel.Selection.Borders(xlEdgeRight).LineStyle = xlContinuous
+   ArchivoExcel.Selection.Borders(xlEdgeBottom).LineStyle = xlContinuous
+   ArchivoExcel.Selection.Borders(xlInsideVertical).LineStyle = xlContinuous
+   ArchivoExcel.Selection.Borders(xlInsideHorizontal).LineStyle = xlContinuous
+   
+   ArchivoExcel.Sheets("Hoja1").Select
+   ArchivoExcel.Range("A1").Select
+   
+'  -------------------------------------- Graba el archivo, lo combierte a PDF y borra el Excel ------------------------------------
+   ArchivoExcel.ActiveWorkbook.Save
+   ArchivoExcel.Application.DisplayAlerts = True
+   ArchivoExcel.Visible = True
+   
+   'Guarda un copia en Pdf
+   ArchivoExcel.ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, FileName:=Left(strRutaExcel, Len(strRutaExcel) - 5) & ".pdf" _
+           , Quality:=xlQualityStandard, IncludeDocProperties:=True, IgnorePrintAreas:=False, OpenAfterPublish:=True
+   
+   'Elimina archivo
+   ArchivoExcel.ActiveWorkbook.Close
+   Set ArchivoExcel = Nothing
+   Kill (strRutaExcel)
+   
+Exit_ReporteCubTotals:
+    Exit Sub
+
+Err_ReporteCubTotals:
+    MsgBox Err.Description
+    Resume Exit_ReporteCubTotals
+    
+End Sub
